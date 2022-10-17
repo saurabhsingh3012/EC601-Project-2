@@ -1,0 +1,82 @@
+from distutils.command.clean import clean
+from textblob import TextBlob
+import tweepy
+import sys
+
+##############################################################################################################
+# Using tweepy to build a connection to Twitter API and get access to real-time tweets
+
+api_key = "xxxxxxxxxxxxxxxxxx"
+api_key_secret = "xxxxxxxxxxxxxxxxxxxxxxxxx"
+access_token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+access_token_secret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+auth_handler = tweepy.OAuthHandler(consumer_key = api_key, consumer_secret = api_key_secret)
+auth_handler.set_access_token(access_token,access_token_secret)
+
+api = tweepy.API(auth_handler)
+
+##############################################################################################################
+# Extracting tweets from twiiter based in the search term
+
+print("Please enter the movie you want to know is popular:")
+search_term1= input()
+print("Choice 2:")
+search_term2 = input()
+print("\n")
+
+
+search_term = "war"
+
+no_of_tweets = 200
+tweets1 = tweepy.Cursor(api.search_tweets, q = search_term1, lang = 'en').items(no_of_tweets)
+tweets2 = tweepy.Cursor(api.search_tweets, q = search_term2, lang = 'en').items(no_of_tweets)
+
+#for tweet in tweets:
+#    print(tweet.text)
+
+
+##############################################################################################################
+# Cleaning the tweets to remove irrelevant information and analysing the cleaned tweets using TextBlob
+
+polarity1 = 0  #To determine the sentiment polarity (positive or negative) of the tweets
+polarity2 = 0
+
+for tweet in tweets1:
+    clean_tweets1 = tweet.text.replace('RT', '')            #deleting 'RT's
+    if clean_tweets1.startswith(' @'):                      #cutting of the username 
+        pos = clean_tweets1.index(':')
+        clean_tweets1 = clean_tweets1[pos+2:]
+
+    if clean_tweets1.startswith('@'):                       
+        pos = clean_tweets1.index(' ')
+        clean_tweets1 = clean_tweets1[pos+2:]
+    #print(clean_tweets)
+
+    analysis = TextBlob(clean_tweets1)
+    polarity1 += analysis.polarity
+
+#print(polarity)
+Score_1 = polarity1
+
+
+for tweet in tweets2:                                       #Repeating the operations for search term 2sup
+    clean_tweets2 = tweet.text.replace('RT', '')            #deleting 'RT's
+    if clean_tweets2.startswith(' @'):                      #cutting of the username 
+        pos = clean_tweets2.index(':')
+        clean_tweets2 = clean_tweets2[pos+2:]
+
+    if clean_tweets2.startswith('@'):                       
+        pos = clean_tweets2.index(' ')
+        clean_tweets2 = clean_tweets2[pos+2:]
+    #print(clean_tweets)
+
+    analysis = TextBlob(clean_tweets2)
+    polarity2 += analysis.polarity
+
+Score_2 = polarity2
+
+if Score_1 > Score_2:
+    print(f"Movie "+ search_term1 +" is more popular than movie "+search_term2)
+else:
+    print(f"Movie "+ search_term2 +" is more popular than movie "+search_term1)
